@@ -7,7 +7,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Xamarin.Android.Tools.MavenBindingAutomator</RootNamespace>
     <AssemblyName>Xamarin.Android.Tools.MavenBindingAutomator</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -35,11 +35,19 @@
   <ItemGroup>
     <Compile Include="Repository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="BindingAutomatorOptions.cs" />
-    <Compile Include="MavenBindingAutomator.cs" />
+    <Compile Include="MavenDownloader.cs" />
     <Compile Include="PackageReference.cs" />
     <Compile Include="PomComponentKind.cs" />
     <Compile Include="Extensions.cs" />
+    <Compile Include="MavenBindingAutomator.cs" />
+    <Compile Include="JavaDocumentImporter.cs" />
+    <Compile Include="LogRecord.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\external\LibZipSharp\libZipSharp.csproj">
+      <Project>{E248B2CA-303B-4645-ADDC-9D4459D550FD}</Project>
+      <Name>libZipSharp</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>

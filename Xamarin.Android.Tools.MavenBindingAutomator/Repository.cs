@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.IO;
 using System.Net.Http;
 using System.Runtime.Serialization;
@@ -31,7 +31,7 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 			return false;
 		}
 
-		public virtual PackageReference RetrievePomContent (PackageReference pr, BindingAutomatorOptions options)
+		public virtual PackageReference RetrievePomContent (PackageReference pr, MavenDownloader.Options options)
 		{
 			var pomUrl = BuildDownloadUrl (pr, PomComponentKind.PomXml);
 			options.LogMessage ("Downloading pom: " + pomUrl);
@@ -52,7 +52,7 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 		/// <param name="kind">Pom component kind.</param>
 		public abstract string BuildDownloadUrl (PackageReference pkg, PomComponentKind kind);
 
-		public virtual async Task<Stream> GetStreamAsync (PackageReference pkg, PomComponentKind kind, BindingAutomatorOptions options)
+		public virtual async Task<Stream> GetStreamAsync (PackageReference pkg, PomComponentKind kind, MavenDownloader.Options options)
 		{
 			var pr = RetrievePomContent (pkg, options);
 			var url = BuildDownloadUrl (pr, kind);
@@ -103,7 +103,7 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 			return IsAndroidSdkComponent (pr.GroupId);
 		}
 
-		public override Task<Stream> GetStreamAsync (PackageReference pkg, PomComponentKind kind, BindingAutomatorOptions options)
+		public override Task<Stream> GetStreamAsync (PackageReference pkg, PomComponentKind kind, MavenDownloader.Options options)
 		{
 			string basePath = $"{android_sdk}/extras/android/m2repository/{pkg.GroupId.Replace ('.', '/')}/{pkg.ArtifactId}";
 			string file = kind == PomComponentKind.PomXml ? 

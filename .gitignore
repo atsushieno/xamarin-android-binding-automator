@@ -1,3 +1,4 @@
 packages
 *.userprefs
-
+bin
+obj

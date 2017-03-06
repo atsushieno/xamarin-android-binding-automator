@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 namespace Xamarin.Android.Tools.MavenBindingAutomator
 {
@@ -6,17 +6,21 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 	{
 		public static void Main (string [] args)
 		{
-			var opts = new BindingAutomatorOptions ();
+			var automatorOptions = new MavenBindingAutomatorOptions ();
+			var dlOpts = automatorOptions.DownloaderOptions;
+			var javadocOpts = automatorOptions.JavaDocumentImporterOptions;
 			foreach (var arg in args) {
-				if (arg.StartsWith ("--sdk:", StringComparison.Ordinal))
-					opts.Repositories.Add (new LocalAndroidSdkRepository (arg.Substring ("--sdk:".Length)));
+				if (arg.StartsWith ("--android-sdk:", StringComparison.Ordinal))
+					dlOpts.Repositories.Add (new LocalAndroidSdkRepository (arg.Substring ("--android-sdk:".Length)));
+				else if (arg.StartsWith ("--xamarin-sdk:", StringComparison.Ordinal))
+					javadocOpts.XamarinSdk = arg.Substring ("--xamarin-sdk:".Length);
 				else if (arg.StartsWith ("--out:", StringComparison.Ordinal))
-					opts.OutputPath = arg.Substring ("--out:".Length);
+					dlOpts.OutputPath = arg.Substring ("--out:".Length);
 				else
-					opts.Poms.Add (arg);
+					dlOpts.Poms.Add (arg);
 			}
-			opts.Repositories.Add (new JCenterRepository ());
-			new MavenBindingAutomator ().Process (opts);
+			dlOpts.Repositories.Add (new JCenterRepository ());
+			new MavenBindingAutomator ().Process (automatorOptions);
 		}
 	}
 }
