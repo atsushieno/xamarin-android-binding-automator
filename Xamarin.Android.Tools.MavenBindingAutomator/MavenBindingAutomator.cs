@@ -6,6 +6,8 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 	public class MavenBindingAutomatorOptions
 	{
 		public MavenDownloader.Options DownloaderOptions { get; set; } = new MavenDownloader.Options ();
+		public BindingProjectCreator.Options ProjectCreatorOptions { get; set; } = new BindingProjectCreator.Options ();
+		public BindingProjectBuilder.Options ProjectBuilderOptions { get; set; } = new BindingProjectBuilder.Options ();
 		public JavaDocumentImporter.Options JavaDocumentImporterOptions { get; set; } = new JavaDocumentImporter.Options ();
 	}
 
@@ -15,14 +17,19 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 		{
 			// download Java dependencies
 			var d = new MavenDownloader ();
-			d.Process (options.DownloaderOptions);
+			var dr = d.Process (options.DownloaderOptions);
 
 			// create project to build
-			throw new NotImplementedException ();
+			var c = new BindingProjectCreator ();
+			var cr = c.Process (options.ProjectCreatorOptions, dr.Downloads);
 
-			// import javadoc
-			var i = new JavaDocumentImporter ();
-			i.Process (options.JavaDocumentImporterOptions);
+			// build project
+			var b = new BindingProjectBuilder ();
+			b.Process (options.ProjectBuilderOptions, cr.Projects);
+
+			// import javadoc ... so far it's done within binding builds.
+			//var i = new JavaDocumentImporter ();
+			//i.Process (options.JavaDocumentImporterOptions);
 		}
 	}
 }

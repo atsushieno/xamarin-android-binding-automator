@@ -31,6 +31,7 @@
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Net.Http" />
+    <Reference Include="Microsoft.Build.Framework" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Repository.cs" />
@@ -42,11 +43,18 @@
     <Compile Include="MavenBindingAutomator.cs" />
     <Compile Include="JavaDocumentImporter.cs" />
     <Compile Include="LogRecord.cs" />
+    <Compile Include="BindingProjectCreator.cs" />
+    <Compile Include="LocalMavenDownloads.cs" />
+    <Compile Include="BindingProjectBuilder.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\external\LibZipSharp\libZipSharp.csproj">
       <Project>{E248B2CA-303B-4645-ADDC-9D4459D550FD}</Project>
       <Name>libZipSharp</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\external\Xamarin.ProjectTools\Xamarin.ProjectTools.csproj">
+      <Project>{2DD1EE75-6D8D-4653-A800-0A24367F7F38}</Project>
+      <Name>Xamarin.ProjectTools</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

@@ -19,10 +19,14 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 			}
 		}
 
-		public IDictionary<string,PomComponentKind> SavedFiles { get; private set; } = new Dictionary<string, PomComponentKind> ();
-
-		public void Process (Options options)
+		public class Results
 		{
+			public LocalMavenDownloads Downloads { get; set; } = new LocalMavenDownloads ();
+		}
+
+		public Results Process (Options options)
+		{
+			var results = new Results ();
 			var outbase = options.OutputPath ?? Directory.GetCurrentDirectory ();
 			foreach (var pom in options.Poms) {
 				foreach (var repo in options.Repositories) {
@@ -32,7 +36,7 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 							continue;
 						foreach (var kind in new PomComponentKind [] { PomComponentKind.Binary, PomComponentKind.JavadocJar }) {
 							var outfile = BuildLocalCachePath (outbase, pkgspec, kind);
-							SavedFiles.Add (outfile, kind);
+							results.Downloads.Entries.Add (new LocalMavenDownloads.Entry (pkgspec, kind, outfile));
 							Directory.CreateDirectory (Path.GetDirectoryName (outfile));
 							using (var stream = repo.GetStreamAsync (pkgspec, kind, options).Result)
 								using (var outfs = File.OpenWrite (outfile))
@@ -43,6 +47,7 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 					}
 				}
 			}
+			return results;
 		}
 
 		public static string BuildLocalCachePath (string basePath, PackageReference pr, PomComponentKind kind)

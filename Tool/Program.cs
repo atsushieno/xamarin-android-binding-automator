@@ -8,12 +8,18 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 		{
 			var automatorOptions = new MavenBindingAutomatorOptions ();
 			var dlOpts = automatorOptions.DownloaderOptions;
+			var creatorOpts = automatorOptions.ProjectCreatorOptions;
+			var builderOpts = automatorOptions.ProjectBuilderOptions;
 			var javadocOpts = automatorOptions.JavaDocumentImporterOptions;
 			foreach (var arg in args) {
 				if (arg.StartsWith ("--android-sdk:", StringComparison.Ordinal))
 					dlOpts.Repositories.Add (new LocalAndroidSdkRepository (arg.Substring ("--android-sdk:".Length)));
 				else if (arg.StartsWith ("--xamarin-sdk:", StringComparison.Ordinal))
 					javadocOpts.XamarinSdk = arg.Substring ("--xamarin-sdk:".Length);
+				else if (arg.StartsWith ("--projects:", StringComparison.Ordinal)) {
+					creatorOpts.SolutionDirectory = arg.Substring ("--projects:".Length);
+					builderOpts.SolutionDirectory = arg.Substring ("--projects:".Length);
+				}
 				else if (arg.StartsWith ("--out:", StringComparison.Ordinal))
 					dlOpts.OutputPath = arg.Substring ("--out:".Length);
 				else
