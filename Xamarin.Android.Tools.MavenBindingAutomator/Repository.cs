@@ -152,5 +152,20 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 		}
 	}
 
-	
+	public class GoogleRepository : Repository
+	{
+		public const string GoogleBaseUrl = "https://maven.google.com/";
+
+		public override bool CanTryDownloading (PackageReference pr)
+		{
+			return pr.GroupId.StartsWith ("android.arch.", StringComparison.Ordinal);
+		}
+
+		public override string BuildDownloadUrl (PackageReference pkg, PomComponentKind kind)
+		{
+			return string.Concat ($"{GoogleBaseUrl}{pkg.GroupId?.Replace ('.', '/')}/{pkg.ArtifactId}/{pkg.Version}/{pkg.ArtifactId}-{pkg.Version}{kind.ToFileSuffix (pkg)}");
+		}
+	}
+
+
 }

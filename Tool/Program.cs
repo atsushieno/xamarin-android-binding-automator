@@ -12,6 +12,10 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 			var builderOpts = automatorOptions.ProjectBuilderOptions;
 			var javadocOpts = automatorOptions.JavaDocumentImporterOptions;
 			foreach (var arg in args) {
+				if (arg == "--help") {
+					ShowHelp ();
+					return;
+				}
 				if (arg.StartsWith ("--android-sdk:", StringComparison.Ordinal))
 					dlOpts.Repositories.Add (new LocalAndroidSdkRepository (arg.Substring ("--android-sdk:".Length)));
 				else if (arg.StartsWith ("--xamarin-sdk:", StringComparison.Ordinal))
@@ -25,8 +29,20 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 				else
 					dlOpts.Poms.Add (arg);
 			}
+			dlOpts.Repositories.Add (new GoogleRepository ());
 			dlOpts.Repositories.Add (new JCenterRepository ());
 			new MavenBindingAutomator ().Process (automatorOptions);
+		}
+
+		static void ShowHelp ()
+		{
+			Console.WriteLine (@"
+Arguments:
+	--help: show help.
+	--xamarin-sdk:[specify path-to Xamarin.Android SDK prefix]
+	--projects:[maven package ID]
+	--out:[output path]
+"); 
 		}
 	}
 }

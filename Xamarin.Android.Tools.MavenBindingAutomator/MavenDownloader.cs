@@ -43,6 +43,7 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 									stream.CopyTo (outfs);
 							break;
 						}
+						break;
 					} catch (RepositoryDownloadException) {
 					}
 				}
