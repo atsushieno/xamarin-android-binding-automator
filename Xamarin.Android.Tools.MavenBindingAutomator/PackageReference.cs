@@ -1,8 +1,6 @@
 using System;
-using System.IO;
-using System.Net.Http;
-using System.Runtime.Serialization;
-using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Linq;
 using System.Xml.Linq;
 
 namespace Xamarin.Android.Tools.MavenBindingAutomator
@@ -14,14 +12,15 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 		public string ArtifactId { get; set; }
 		public string Version { get; set; }
 		public string VersionLong { get; set; }
-		string packaging;
+		public string DeclaredPackaging { get; set; }
 		public string Packaging {
 			// maven-metadata.xml in Android SDK does not have this, and default should be "aar". Otherwise, "jar".
-			get { return packaging ?? (Repository.IsAndroidSdkComponent (GroupId) ? "aar" : "jar"); }
-			set { packaging = value; }
+			get { return DeclaredPackaging ?? (Repository.IsAndroidArchitectureComponent (GroupId) || Repository.IsAndroidSdkComponent (GroupId) ? "aar" : "jar"); }
 		}
 		public string Name { get; set; }
 		public string Description { get; set; }
+		public string Scope { get; set; }
+		public IList<PackageReference> Dependencies { get; private set; } = new List<PackageReference> ();
 
 		public const string MavenPom4Namespace = "http://maven.apache.org/POM/4.0.0";
 		internal static readonly XNamespace NS = XNamespace.Get (MavenPom4Namespace);
@@ -35,10 +34,18 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 			pr.ArtifactId = element.Value ("artifactId") ?? pr.ArtifactId;
 			pr.Version = (old ? element.Element ("versioning").Element ("versions") : element).Value ("version") ?? pr.Version;
 			pr.VersionLong = pr.Version;
-			pr.Packaging = element.Value ("packaging") ?? pr.Packaging;
+			pr.DeclaredPackaging = element.Value ("packaging") ?? pr.DeclaredPackaging;
 			pr.Name = element.Value ("name") ?? pr.Name;
 			pr.Description = element.Value ("description") ?? pr.Description;
+			pr.Scope = element.Value ("scope") ?? pr.Scope;
+			var deps = element.Elements (old ? XName.Get ("dependencies") : NS.GetName ("dependencies"));
+			pr.Dependencies = deps.SelectMany (p => p.Elements (old ? XName.Get ("dependency") : NS.GetName ("dependency")).Select (d => Load (d))).ToList ();
 			return pr;
+		}
+
+		public override string ToString ()
+		{
+			return $"{GroupId}:{ArtifactId}:{Version}";
 		}
 	}
 	

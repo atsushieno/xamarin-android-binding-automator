@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using NUnit.Framework;
 
 namespace Xamarin.Android.Tools.MavenBindingAutomator.Tests
@@ -17,6 +18,23 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator.Tests
 			Assert.AreEqual ("com.android.support", pr2.GroupId, "#2.1");
 			Assert.AreEqual ("appcompat-v7", pr2.ArtifactId, "#2.2");
 			Assert.AreEqual ("25.1.1", pr2.Version, "#2.3");
+		}
+
+		[Test]
+		public void FromGradleSpecifierResolveDependencies ()
+		{
+			var pr1 = new GoogleRepository ().RetrievePomContent (Repository.FromGradleSpecifier ("android.arch.lifecycle:runtime:1.0.0-alpha1"), null);
+			Assert.AreEqual ("android.arch.lifecycle", pr1.GroupId, "#1.1");
+			Assert.AreEqual ("runtime", pr1.ArtifactId, "#1.2");
+			Assert.AreEqual ("1.0.0-alpha1", pr1.Version, "#1.3");
+			var deps = new string [] {
+				"android.arch.lifecycle:common:1.0.0-alpha1",
+				"android.arch.core:core:1.0.0-alpha1",
+				"com.android.support:support-core-utils:25.3.1",
+				"com.android.support:support-fragment:25.3.1",
+				"com.android.support:support-annotations:25.3.1",
+			};
+			Array.ForEach (deps, d => Assert.IsTrue (pr1.Dependencies.Any (p => p.ToString () == d), "missing: " + d));
 		}
 
 		[Test]

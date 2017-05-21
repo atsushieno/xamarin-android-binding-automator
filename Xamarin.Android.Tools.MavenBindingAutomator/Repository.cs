@@ -31,8 +31,19 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 			return false;
 		}
 
+		public static bool IsAndroidArchitectureComponent (string groupId)
+		{
+			return groupId.StartsWith ("android.arch.", StringComparison.Ordinal);
+		}
+
+		public virtual bool ShouldSkipDownload (PackageReference pr)
+		{
+			return false;
+		}
+
 		public virtual PackageReference RetrievePomContent (PackageReference pr, MavenDownloader.Options options)
 		{
+			options = options ?? new MavenDownloader.Options ();
 			var pomUrl = BuildDownloadUrl (pr, PomComponentKind.PomXml);
 			options.LogMessage ("Downloading pom: " + pomUrl);
 			var pom = XElement.Load (pomUrl);
@@ -44,13 +55,23 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 			return !IsAndroidSdkComponent (pr.GroupId);
 		}
 
+		public abstract string BaseUrl { get; }
+
 		/// <summary>
 		/// constructs a download URL, or throw <see cref="T:RepositoryDownloadException" />
 		/// </summary>
 		/// <returns>The download URL.</returns>
 		/// <param name="pkg">Package.</param>
 		/// <param name="kind">Pom component kind.</param>
-		public abstract string BuildDownloadUrl (PackageReference pkg, PomComponentKind kind);
+		public virtual string BuildDownloadUrl (PackageReference pkg, PomComponentKind kind)
+		{
+			return BuildDownloadUrl (BaseUrl, pkg, kind);
+		}
+
+		public static string BuildDownloadUrl (string baseUrl, PackageReference pkg, PomComponentKind kind)
+		{
+			return string.Concat ($"{baseUrl}{pkg.GroupId?.Replace ('.', '/')}/{pkg.ArtifactId}/{pkg.Version}/{pkg.ArtifactId}-{pkg.Version}{kind.ToFileSuffix (pkg)}");
+		}
 
 		public virtual async Task<Stream> GetStreamAsync (PackageReference pkg, PomComponentKind kind, MavenDownloader.Options options)
 		{
@@ -122,9 +143,13 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 			}
 		}
 
+		public override string BaseUrl {
+			get { return $"file://{android_sdk}/extras/android/m2repository/"; }
+		}
+
 		public override string BuildDownloadUrl (PackageReference pkg, PomComponentKind kind)
 		{
-			string basePath = $"file://{android_sdk}/extras/android/m2repository/{pkg.GroupId.Replace ('.', '/')}/{pkg.ArtifactId}";
+			string basePath = BaseUrl + $"{pkg.GroupId.Replace ('.', '/')}/{pkg.ArtifactId}";
 			if (kind == PomComponentKind.PomXml)
 				return $"{basePath}/maven-metadata.xml";
 			else
@@ -134,38 +159,32 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 
 	public class OfficialMavenRepository : Repository
 	{
-		public const string MavenBaseUrl = "https://search.maven.org/remotecontent?filepath=";
-
-		public override string BuildDownloadUrl (PackageReference pkg, PomComponentKind kind)
-		{
-			return string.Concat ($"{MavenBaseUrl}{pkg.GroupId?.Replace ('.', '/')}/{pkg.ArtifactId}/{pkg.Version}/{pkg.ArtifactId}-{pkg.Version}{kind.ToFileSuffix (pkg)}");
-		}
+		public override string BaseUrl { get; } = "https://search.maven.org/remotecontent?filepath=";
 	}
 
 	public class JCenterRepository : Repository
 	{
-		public const string JCenterBaseUrl = "https://dl.bintray.com/content/bintray/jcenter/";
-
-		public override string BuildDownloadUrl (PackageReference pkg, PomComponentKind kind)
-		{
-			return string.Concat ($"{JCenterBaseUrl}{pkg.GroupId?.Replace ('.', '/')}/{pkg.ArtifactId}/{pkg.Version}/{pkg.ArtifactId}-{pkg.Version}{kind.ToFileSuffix (pkg)}");
-		}
+		public override string BaseUrl { get; } = "https://dl.bintray.com/content/bintray/jcenter/";
 	}
 
 	public class GoogleRepository : Repository
 	{
-		public const string GoogleBaseUrl = "https://maven.google.com/";
+		public override string BaseUrl { get; } = "https://maven.google.com/";
 
 		public override bool CanTryDownloading (PackageReference pr)
 		{
-			return pr.GroupId.StartsWith ("android.arch.", StringComparison.Ordinal);
+			if (IsAndroidArchitectureComponent (pr.GroupId))
+				return true;
+			switch (pr.GroupId) {
+			case "com.android.support":
+				return true;
+			}
+			return false;
 		}
 
-		public override string BuildDownloadUrl (PackageReference pkg, PomComponentKind kind)
+		public override bool ShouldSkipDownload (PackageReference pr)
 		{
-			return string.Concat ($"{GoogleBaseUrl}{pkg.GroupId?.Replace ('.', '/')}/{pkg.ArtifactId}/{pkg.Version}/{pkg.ArtifactId}-{pkg.Version}{kind.ToFileSuffix (pkg)}");
+			return pr.DeclaredPackaging == null;
 		}
 	}
-
-
 }

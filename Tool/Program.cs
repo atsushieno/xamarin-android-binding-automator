@@ -11,6 +11,8 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 			var creatorOpts = automatorOptions.ProjectCreatorOptions;
 			var builderOpts = automatorOptions.ProjectBuilderOptions;
 			var javadocOpts = automatorOptions.JavaDocumentImporterOptions;
+
+			dlOpts.Repositories.Add (new GoogleRepository ());
 			foreach (var arg in args) {
 				if (arg == "--help") {
 					ShowHelp ();
@@ -29,8 +31,8 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 				else
 					dlOpts.Poms.Add (arg);
 			}
-			dlOpts.Repositories.Add (new GoogleRepository ());
 			dlOpts.Repositories.Add (new JCenterRepository ());
+
 			new MavenBindingAutomator ().Process (automatorOptions);
 		}
 
