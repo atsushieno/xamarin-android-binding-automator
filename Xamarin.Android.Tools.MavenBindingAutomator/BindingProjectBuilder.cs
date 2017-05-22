@@ -26,7 +26,7 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 				throw new ArgumentException (string.Format ("Project generation target directory '{0}' specified in the project creator options does not exist.", options.SolutionDirectory));
 
 			foreach (var p in projects) {
-				var builder = new ProjectBuilder (Path.Combine (options.SolutionDirectory, p.ProjectFilePath));
+				var builder = new ProjectBuilder (Path.Combine (options.SolutionDirectory, p.ProjectName));
 				// We'd like to investigate the outcomes, so leave them there.
 				builder.CleanupOnDispose = false;
 				builder.Verbosity = Microsoft.Build.Framework.LoggerVerbosity.Diagnostic;

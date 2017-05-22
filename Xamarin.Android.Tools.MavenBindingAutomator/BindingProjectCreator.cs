@@ -31,7 +31,7 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 				var proj = new XamarinAndroidBindingProject () { ProjectName = g.Key.Replace (':', '_') };
 				foreach (var d in g) {
 					if (d.ComponentKind == PomComponentKind.Binary)
-						proj.Jars.Add (d.Package.Packaging == "jar" ? (BuildItem)new AndroidItem.EmbeddedJar (d.LocalFile) : new AndroidItem.LibraryProjectZip (d.LocalFile));
+						proj.Jars.Add (d.Package.Packaging == "jar" ? (BuildItem) new AndroidItem.EmbeddedJar (d.LocalFile) : new AndroidItem.LibraryProjectZip (d.LocalFile));
 					else if (d.ComponentKind == PomComponentKind.JavadocJar)
 						proj.OtherBuildItems.Add (new BuildItem ("JavaDocJar", d.LocalFile));
 				}
