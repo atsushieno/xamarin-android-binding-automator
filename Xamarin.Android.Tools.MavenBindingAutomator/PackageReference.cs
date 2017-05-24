@@ -15,7 +15,7 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 		public string DeclaredPackaging { get; set; }
 		public string Packaging {
 			// maven-metadata.xml in Android SDK does not have this, and default should be "aar". Otherwise, "jar".
-			get { return DeclaredPackaging ?? (Repository.IsAndroidArchitectureComponent (GroupId) || Repository.IsAndroidSdkComponent (GroupId) ? "aar" : "jar"); }
+			get { return DeclaredPackaging ?? (Repository.IsAndroidSdkComponent (GroupId) && ArtifactId != "support-annotations" ? "aar" : "jar"); }
 		}
 		public string Name { get; set; }
 		public string Description { get; set; }

@@ -181,10 +181,5 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 			}
 			return false;
 		}
-
-		public override bool ShouldSkipDownload (PackageReference pr)
-		{
-			return pr.DeclaredPackaging == null;
-		}
 	}
 }
