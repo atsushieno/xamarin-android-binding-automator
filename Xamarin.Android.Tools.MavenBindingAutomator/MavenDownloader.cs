@@ -78,12 +78,16 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 							var outfile = BuildLocalCachePath (outbase, pkgspec, kind);
 							results.Downloads.Entries.Add (new LocalMavenDownloads.Entry (pkgspec, kind, outfile));
 							Directory.CreateDirectory (Path.GetDirectoryName (outfile));
-							using (var stream = repo.GetStreamAsync (pkgspec, kind, options).Result)
+							try {
+								using (var stream = repo.GetStreamAsync (pkgspec, kind, options).Result)
 								using (var outfs = File.OpenWrite (outfile))
 									stream.CopyTo (outfs);
+							} catch {
+								options.LogMessage ($"could not download {outfile}");
+								continue;
+							}
 							options.LogMessage ($"saved at {outfile}");
 							done = true;
-							break;
 						}
 						break;
 					} catch (RepositoryDownloadException) {
