@@ -5,6 +5,8 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 {
 	public class LocalMavenDownloads
 	{
+		public string BaseDirectory { get; set; }
+		
 		public IList<Entry> Entries { get; private set; } = new List<Entry> ();
 
 		public class Entry

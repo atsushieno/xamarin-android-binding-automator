@@ -35,7 +35,7 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 				try {
 					if (!repo.CanTryDownloading (pr))
 						continue;
-					var p = repo.RetrievePomContent (pr, options);
+					var p = repo.RetrievePomContent (pr, options, BuildLocalCachePath (options.OutputPath, pr, PomComponentKind.PomXml));
 					if (!repo.ShouldSkipDownload (p))
 						ret.Add (p);
 					if (!options.IgnoreDependencies)
@@ -66,20 +66,24 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 		public Results Process (Options options)
 		{
 			var results = new Results ();
-			var outbase = options.OutputPath ?? Directory.GetCurrentDirectory ();
+			results.Downloads.BaseDirectory = options.OutputPath ?? Directory.GetCurrentDirectory ();
 			var pkgspecs = FlattenAllPackageReferences (options).ToArray ();
+			var processed = new List<PackageReference> ();
 			foreach (var pkgspec in pkgspecs) {
+				if (processed.Any (p => p.ToString () == pkgspec.ToString ()))
+					continue;
+				processed.Add (pkgspec);
 				bool done = false;
 				foreach (var repo in options.Repositories) {
 					try {
 						if (!repo.CanTryDownloading (pkgspec))
 							continue;
 						foreach (var kind in new PomComponentKind [] { PomComponentKind.Binary, PomComponentKind.JavadocJar }) {
-							var outfile = BuildLocalCachePath (outbase, pkgspec, kind);
+							var outfile = BuildLocalCachePath (results.Downloads.BaseDirectory, pkgspec, kind);
 							results.Downloads.Entries.Add (new LocalMavenDownloads.Entry (pkgspec, kind, outfile));
 							Directory.CreateDirectory (Path.GetDirectoryName (outfile));
 							try {
-								using (var stream = repo.GetStreamAsync (pkgspec, kind, options).Result)
+								using (var stream = repo.GetStreamAsync (pkgspec, kind, options, BuildLocalCachePath (options.OutputPath, pkgspec, PomComponentKind.PomXml)).Result)
 								using (var outfs = File.OpenWrite (outfile))
 									stream.CopyTo (outfs);
 							} catch {

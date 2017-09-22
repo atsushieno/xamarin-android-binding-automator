@@ -41,12 +41,17 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 			return false;
 		}
 
-		public virtual PackageReference RetrievePomContent (PackageReference pr, MavenDownloader.Options options)
+		public virtual PackageReference RetrievePomContent (PackageReference pr, MavenDownloader.Options options, string pomSavedPath)
 		{
 			options = options ?? new MavenDownloader.Options ();
 			var pomUrl = BuildDownloadUrl (pr, PomComponentKind.PomXml);
 			options.LogMessage ("Downloading pom: " + pomUrl);
-			var pom = XElement.Load (pomUrl);
+			if (!Directory.Exists (Path.GetDirectoryName (pomSavedPath)))
+				Directory.CreateDirectory (Path.GetDirectoryName (pomSavedPath));
+			using (var pomFile = File.Create (pomSavedPath))
+			using (var hc = new HttpClient ())
+				hc.GetStreamAsync (pomUrl).Result.CopyTo (pomFile);
+			var pom = XElement.Load (pomSavedPath);
 			return PackageReference.Load (pom);
 		}
 
@@ -73,9 +78,9 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 			return string.Concat ($"{baseUrl}{pkg.GroupId?.Replace ('.', '/')}/{pkg.ArtifactId}/{pkg.Version}/{pkg.ArtifactId}-{pkg.Version}{kind.ToFileSuffix (pkg)}");
 		}
 
-		public virtual async Task<Stream> GetStreamAsync (PackageReference pkg, PomComponentKind kind, MavenDownloader.Options options)
+		public virtual async Task<Stream> GetStreamAsync (PackageReference pkg, PomComponentKind kind, MavenDownloader.Options options, string pomSavedPath)
 		{
-			var pr = RetrievePomContent (pkg, options);
+			var pr = RetrievePomContent (pkg, options, pomSavedPath);
 			var url = BuildDownloadUrl (pr, kind);
 			options.LogMessage ($"Downloading {url} ...");
 			return await GetStreamFromUrlAsync (url);
@@ -124,7 +129,7 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 			return IsAndroidSdkComponent (pr.GroupId);
 		}
 
-		public override Task<Stream> GetStreamAsync (PackageReference pkg, PomComponentKind kind, MavenDownloader.Options options)
+		public override Task<Stream> GetStreamAsync (PackageReference pkg, PomComponentKind kind, MavenDownloader.Options options, string pomsavedPath)
 		{
 			string basePath = $"{android_sdk}/extras/android/m2repository/{pkg.GroupId.Replace ('.', '/')}/{pkg.ArtifactId}";
 			string file = kind == PomComponentKind.PomXml ? 

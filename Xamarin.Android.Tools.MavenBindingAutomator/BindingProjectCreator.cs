@@ -11,6 +11,12 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 		public class Options
 		{
 			public string SolutionDirectory { get; set; }
+			public TextWriter LogWriter { get; set; } = Console.Out;
+
+			public void LogMessage (string format, params object [] args)
+			{
+				LogWriter.WriteLine (format, args);
+			}
 		}
 
 		public class Result
@@ -26,16 +32,25 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 				throw new ArgumentException ("Project generation target directory is not set in the project creator options.");
 			if (!Directory.Exists (options.SolutionDirectory))
 				Directory.CreateDirectory (options.SolutionDirectory);
-			
+			string pathPrefix = Path.GetDirectoryName (options.SolutionDirectory) == Path.GetDirectoryName (downloads.BaseDirectory) ? Path.Combine ("..", "..") : downloads.BaseDirectory;
+
+			Func<string, string> pathToFileInProj = local => Path.Combine (pathPrefix, local); 
+
 			foreach (var g in downloads.Entries.GroupBy (e => $"{e.Package.GroupId}:{e.Package.ArtifactId}:{e.Package.Version}")) {
 				var proj = new XamarinAndroidBindingProject () { ProjectName = g.Key.Replace (':', '_') };
-				foreach (var d in g) {
-					if (d.ComponentKind == PomComponentKind.Binary)
-						proj.Jars.Add (d.Package.Packaging == "jar" ? (BuildItem) new AndroidItem.EmbeddedJar (d.LocalFile) : new AndroidItem.LibraryProjectZip (d.LocalFile));
-					else if (d.ComponentKind == PomComponentKind.JavadocJar)
-						proj.OtherBuildItems.Add (new BuildItem ("JavaDocJar", d.LocalFile));
-				}
 				var dir = Path.Combine (options.SolutionDirectory, proj.ProjectName);
+				foreach (var d in g) {
+					string fp = Path.Combine (dir, d.LocalFile);
+					if (!File.Exists (fp)) {
+						options.LogMessage ($"Local download file \"{fp}\" does not exist.");
+						continue;
+					}
+					string file = pathToFileInProj (d.LocalFile);
+					if (d.ComponentKind == PomComponentKind.Binary)
+						proj.Jars.Add (d.Package.Packaging == "jar" ? (BuildItem) new AndroidItem.EmbeddedJar (file) : new AndroidItem.LibraryProjectZip (file));
+					else if (d.ComponentKind == PomComponentKind.JavadocJar)
+						proj.OtherBuildItems.Add (new BuildItem ("JavaDocJar", file));
+				}
 				if (Directory.Exists (dir))
 					Directory.Delete (dir, true);
 				proj.Populate (dir);
