@@ -32,7 +32,7 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 			var pr = parent != null ? Load (parent) : new PackageReference ();
 			pr.GroupId = element.Value ("groupId") ?? pr.GroupId;
 			pr.ArtifactId = element.Value ("artifactId") ?? pr.ArtifactId;
-			pr.Version = (old ? element.Element ("versioning").Element ("versions") : element).Value ("version") ?? pr.Version;
+			pr.Version = (old ? element.Element ("versioning").Element ("versions") : element).Value ("version");
 			pr.VersionLong = pr.Version;
 			pr.DeclaredPackaging = element.Value ("packaging") ?? pr.DeclaredPackaging;
 			pr.Name = element.Value ("name") ?? pr.Name;

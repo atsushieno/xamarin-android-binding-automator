@@ -14,6 +14,7 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 		Binary,
 		SourcesJar,
 		JavadocJar,
+		MavenMetadataXml,
 	}
 	
 }

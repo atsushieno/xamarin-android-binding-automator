@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Net.Http;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
@@ -36,23 +37,58 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 			return groupId.StartsWith ("android.arch.", StringComparison.Ordinal);
 		}
 
+		public static bool IsAndroidToolsComponent (string groupId)
+		{
+			return groupId.StartsWith ("com.android.tools", StringComparison.Ordinal);
+		}
+
 		public virtual bool ShouldSkipDownload (PackageReference pr)
 		{
 			return false;
 		}
 
-		public virtual PackageReference RetrievePomContent (PackageReference pr, MavenDownloader.Options options, string pomSavedPath)
+		public virtual void FixIncompletePackageReference (PackageReference pr, MavenDownloader.Options options)
+		{
+			if (string.IsNullOrEmpty (pr.Version) || pr.Version == $"${{{pr.ArtifactId}.version}}")
+				pr.Version = FillLatestVersion (pr, options);
+		}
+
+		public virtual PackageReference RetrievePomContent (PackageReference pr, MavenDownloader.Options options, Func<PackageReference,string> getPomSavedPath)
 		{
 			options = options ?? new MavenDownloader.Options ();
+
 			var pomUrl = BuildDownloadUrl (pr, PomComponentKind.PomXml);
 			options.LogMessage ("Downloading pom: " + pomUrl);
-			if (!Directory.Exists (Path.GetDirectoryName (pomSavedPath)))
+
+			var pomSavedPath = getPomSavedPath (pr);
+			if (pomSavedPath != null && !Directory.Exists (Path.GetDirectoryName (pomSavedPath)))
 				Directory.CreateDirectory (Path.GetDirectoryName (pomSavedPath));
-			using (var pomFile = File.Create (pomSavedPath))
-			using (var hc = new HttpClient ())
-				hc.GetStreamAsync (pomUrl).Result.CopyTo (pomFile);
-			var pom = XElement.Load (pomSavedPath);
+			var ms = Download (pomUrl);
+			if (pomSavedPath != null) {
+				using (var pomFile = File.Create (pomSavedPath))
+					ms.CopyTo (pomFile);
+				ms.Position = 0;
+			}
+			var pom = XElement.Load (ms);
 			return PackageReference.Load (pom);
+		}
+
+		MemoryStream Download (string url)
+		{
+			var ms = new MemoryStream ();
+			using (var hc = new HttpClient ())
+				hc.GetStreamAsync (url).Result.CopyTo (ms);
+			ms.Position = 0;
+			return ms;
+		}
+
+		string FillLatestVersion ( PackageReference pr, MavenDownloader.Options options)
+		{
+			var dlUrl = BuildDownloadUrl (pr, PomComponentKind.MavenMetadataXml);
+			options.LogMessage ("Version number is missing. Trying to download " + dlUrl + " to get the latest version nuumber.");
+			var ms = Download (dlUrl);
+			var doc = XDocument.Load (ms);
+			return (doc.Root.Element ("versioning")?.Element ("release")?.FirstNode as XText)?.Value;
 		}
 
 		public virtual bool CanTryDownloading (PackageReference pr)
@@ -75,12 +111,14 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 
 		public static string BuildDownloadUrl (string baseUrl, PackageReference pkg, PomComponentKind kind)
 		{
+			if (kind == PomComponentKind.MavenMetadataXml)
+				return string.Concat ($"{baseUrl}{pkg.GroupId?.Replace ('.', '/')}/{pkg.ArtifactId}/maven-metadata.xml");
 			return string.Concat ($"{baseUrl}{pkg.GroupId?.Replace ('.', '/')}/{pkg.ArtifactId}/{pkg.Version}/{pkg.ArtifactId}-{pkg.Version}{kind.ToFileSuffix (pkg)}");
 		}
 
-		public virtual async Task<Stream> GetStreamAsync (PackageReference pkg, PomComponentKind kind, MavenDownloader.Options options, string pomSavedPath)
+		public virtual async Task<Stream> GetStreamAsync (PackageReference pkg, PomComponentKind kind, MavenDownloader.Options options, Func<PackageReference,string> getPomSavedPath)
 		{
-			var pr = RetrievePomContent (pkg, options, pomSavedPath);
+			var pr = RetrievePomContent (pkg, options, getPomSavedPath);
 			var url = BuildDownloadUrl (pr, kind);
 			options.LogMessage ($"Downloading {url} ...");
 			return await GetStreamFromUrlAsync (url);
@@ -129,7 +167,7 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 			return IsAndroidSdkComponent (pr.GroupId);
 		}
 
-		public override Task<Stream> GetStreamAsync (PackageReference pkg, PomComponentKind kind, MavenDownloader.Options options, string pomsavedPath)
+		public override Task<Stream> GetStreamAsync (PackageReference pkg, PomComponentKind kind, MavenDownloader.Options options, Func<PackageReference,string> getPomsavedPath)
 		{
 			string basePath = $"{android_sdk}/extras/android/m2repository/{pkg.GroupId.Replace ('.', '/')}/{pkg.ArtifactId}";
 			string file = kind == PomComponentKind.PomXml ? 
@@ -179,6 +217,8 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 		public override bool CanTryDownloading (PackageReference pr)
 		{
 			if (IsAndroidArchitectureComponent (pr.GroupId))
+				return true;
+			if (IsAndroidToolsComponent (pr.GroupId))
 				return true;
 			switch (pr.GroupId) {
 			case "com.android.support":

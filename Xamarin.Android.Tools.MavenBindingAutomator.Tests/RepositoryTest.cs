@@ -23,7 +23,7 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator.Tests
 		[Test]
 		public void FromGradleSpecifierResolveDependencies ()
 		{
-			var pr1 = new GoogleRepository ().RetrievePomContent (Repository.FromGradleSpecifier ("android.arch.lifecycle:runtime:1.0.0-alpha1"), null);
+			var pr1 = new GoogleRepository ().RetrievePomContent (Repository.FromGradleSpecifier ("android.arch.lifecycle:runtime:1.0.0-alpha1"), null, null);
 			Assert.AreEqual ("android.arch.lifecycle", pr1.GroupId, "#1.1");
 			Assert.AreEqual ("runtime", pr1.ArtifactId, "#1.2");
 			Assert.AreEqual ("1.0.0-alpha1", pr1.Version, "#1.3");
