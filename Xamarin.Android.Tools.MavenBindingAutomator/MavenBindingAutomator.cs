@@ -19,6 +19,11 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 			var d = new MavenDownloader ();
 			var dr = d.Process (options.DownloaderOptions);
 
+			if (options.ProjectCreatorOptions.SolutionDirectory == null) {
+				options.DownloaderOptions.LogMessage ("Required option for projects directory is missing. No further action is taken. Done.");
+				return;
+			}
+
 			// create project to build
 			var c = new BindingProjectCreator ();
 			var cr = c.Process (options.ProjectCreatorOptions, dr.Downloads);
