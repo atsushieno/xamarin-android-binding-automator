@@ -36,7 +36,7 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 					if (!repo.CanTryDownloading (pr))
 						continue;
 					repo.FixIncompletePackageReference (pr, options);
-					var p = repo.RetrievePomContent (pr, options, _pr => BuildLocalCachePath (options.OutputPath, _pr, PomComponentKind.PomXml));
+					var p = repo.RetrievePomContent (pr, options, null);
 					if (!repo.ShouldSkipDownload (p))
 						ret.Add (p);
 					if (!options.IgnoreDependencies)
@@ -85,7 +85,7 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 							results.Downloads.Entries.Add (new LocalMavenDownloads.Entry (pkgspec, kind, outfile));
 							Directory.CreateDirectory (Path.GetDirectoryName (outfile));
 							try {
-								using (var stream = repo.GetStreamAsync (pkgspec, kind, options, _pr => BuildLocalCachePath (options.OutputPath, _pr, PomComponentKind.PomXml)).Result)
+								using (var stream = repo.GetStreamAsync (pkgspec, kind, options, null).Result)
 								using (var outfs = File.OpenWrite (outfile))
 									stream.CopyTo (outfs);
 							} catch {
@@ -107,15 +107,13 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 
 		public static string BuildLocalCachePath (string basePath, PackageReference pr, PomComponentKind kind)
 		{
-			if (string.IsNullOrEmpty (basePath))
-				throw new ArgumentException ("basePath is empty.");
 			if (string.IsNullOrEmpty (pr.GroupId))
 				throw new ArgumentException ("groupId is empty for " + pr);
 			if (string.IsNullOrEmpty (pr.ArtifactId))
 				throw new ArgumentException ("artifactId is empty for " + pr);
 			if (string.IsNullOrEmpty (pr.Version))
 				throw new ArgumentException ("version is empty for " + pr);
-			return Path.Combine (basePath, "download_cache", pr.GroupId, pr.ArtifactId, pr.Version, $"{pr.ArtifactId}-{pr.Version}{kind.ToFileSuffix (pr)}");
+			return Path.Combine (basePath ?? "", "download_cache", pr.GroupId, pr.ArtifactId, pr.Version, $"{pr.ArtifactId}-{pr.Version}{kind.ToFileSuffix (pr)}");
 		}
 	}
 	

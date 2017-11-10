@@ -58,8 +58,9 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 			options = options ?? new MavenDownloader.Options ();
 
 			var pomUrl = BuildDownloadUrl (pr, PomComponentKind.PomXml);
-			options.LogMessage ("Downloading pom: " + pomUrl);
+ 			options.LogMessage ("Downloading pom: " + pomUrl);
 
+			getPomSavedPath = getPomSavedPath ?? (_pr => MavenDownloader.BuildLocalCachePath (options.OutputPath, _pr, PomComponentKind.PomXml));
 			var pomSavedPath = getPomSavedPath (pr);
 			if (pomSavedPath != null && !Directory.Exists (Path.GetDirectoryName (pomSavedPath)))
 				Directory.CreateDirectory (Path.GetDirectoryName (pomSavedPath));
@@ -118,6 +119,7 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 
 		public virtual async Task<Stream> GetStreamAsync (PackageReference pkg, PomComponentKind kind, MavenDownloader.Options options, Func<PackageReference,string> getPomSavedPath)
 		{
+			getPomSavedPath = getPomSavedPath ?? (_pr => MavenDownloader.BuildLocalCachePath (options.OutputPath, _pr, PomComponentKind.PomXml));
 			var pr = RetrievePomContent (pkg, options, getPomSavedPath);
 			var url = BuildDownloadUrl (pr, kind);
 			options.LogMessage ($"Downloading {url} ...");
