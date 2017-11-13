@@ -41,7 +41,8 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 			Console.WriteLine (@"
 Arguments:
 	--help: show help.
-	--xamarin-sdk:[specify path-to Xamarin.Android SDK prefix]
+	--android-sdk:[path-to Android SDK]
+	--xamarin-sdk:[path-to Xamarin.Android SDK prefix]
 	--projects:[project directory]
 	--out:[output path]
 	[maven package IDs]

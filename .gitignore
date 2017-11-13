@@ -1,4 +1,5 @@
 packages
 *.userprefs
+*.csproj.user
 bin
 obj

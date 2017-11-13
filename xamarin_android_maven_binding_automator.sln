@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "libZipSharp", "external\Lib
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.ProjectTools", "external\Xamarin.ProjectTools\Xamarin.ProjectTools.csproj", "{2DD1EE75-6D8D-4653-A800-0A24367F7F38}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xamarin.Android.Tools.MavenBindingAutomator.BuildTasks", "Xamarin.Android.Tools.MavenBindingAutomator.BuildTasks\Xamarin.Android.Tools.MavenBindingAutomator.BuildTasks.csproj", "{D96D27CC-17D7-4E3C-B5AC-0A149970F426}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -37,5 +39,9 @@ Global
 		{2DD1EE75-6D8D-4653-A800-0A24367F7F38}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2DD1EE75-6D8D-4653-A800-0A24367F7F38}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2DD1EE75-6D8D-4653-A800-0A24367F7F38}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D96D27CC-17D7-4E3C-B5AC-0A149970F426}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D96D27CC-17D7-4E3C-B5AC-0A149970F426}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D96D27CC-17D7-4E3C-B5AC-0A149970F426}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D96D27CC-17D7-4E3C-B5AC-0A149970F426}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -32,16 +32,6 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 			return false;
 		}
 
-		public static bool IsAndroidArchitectureComponent (string groupId)
-		{
-			return groupId.StartsWith ("android.arch.", StringComparison.Ordinal);
-		}
-
-		public static bool IsAndroidToolsComponent (string groupId)
-		{
-			return groupId.StartsWith ("com.android.tools", StringComparison.Ordinal);
-		}
-
 		public virtual bool ShouldSkipDownload (PackageReference pr)
 		{
 			return false;
@@ -218,14 +208,13 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 
 		public override bool CanTryDownloading (PackageReference pr)
 		{
-			if (IsAndroidArchitectureComponent (pr.GroupId))
+			if (pr.GroupId.StartsWith ("android.arch.") ||
+			    pr.GroupId.StartsWith ("com.android.databinding") ||
+			    pr.GroupId.StartsWith ("com.android.java.tools.build") ||
+			    pr.GroupId.StartsWith ("com.android.support") ||
+			    pr.GroupId.StartsWith ("com.android.tools") ||
+			    pr.GroupId.StartsWith ("com.android.tools"))
 				return true;
-			if (IsAndroidToolsComponent (pr.GroupId))
-				return true;
-			switch (pr.GroupId) {
-			case "com.android.support":
-				return true;
-			}
 			return false;
 		}
 	}
