@@ -28,9 +28,8 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 			public LocalMavenDownloads Downloads { get; set; } = new LocalMavenDownloads ();
 		}
 
-		IEnumerable<PackageReference> FlattenDependencies (PackageReference pr, Options options)
+		void FlattenDependencies (IList<PackageReference> results, PackageReference pr, Options options)
 		{
-			var ret = new List<PackageReference> ();
 			foreach (var repo in options.Repositories) {
 				try {
 					if (!repo.CanTryDownloading (pr))
@@ -38,16 +37,15 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 					repo.FixIncompletePackageReference (pr, options);
 					var p = repo.RetrievePomContent (pr, options, null);
 					if (!repo.ShouldSkipDownload (p))
-						ret.Add (p);
+						results.Add (p);
 					if (!options.IgnoreDependencies)
-						foreach (var d in p.Dependencies.Where (d => IsScopeCovered (options, d)).SelectMany (d => FlattenDependencies (d, options)))
-							ret.Add (d);
+						foreach (var dep in p.Dependencies.Where (d => results.All (r => r.ToString () != d.ToString ()) && IsScopeCovered (options, d)))
+							FlattenDependencies (results, dep, options);
 					break;
 				} catch (RepositoryDownloadException) {
 					// try next repo.
 				}
 			}
-			return ret;
 		}
 
 		bool IsScopeCovered (Options options, PackageReference p)
@@ -55,20 +53,25 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 			return p.Scope == "compile" || options.ExtraScopes.Contains (p.Scope);
 		}
 
-		IEnumerable<PackageReference> FlattenAllPackageReferences (Options options)
-		{
-			foreach (var pom in options.Poms) {
-				foreach (var pkgspec in FlattenDependencies (Repository.FromGradleSpecifier (pom), options))
-					yield return pkgspec;
-				break;
-			}
-		}
-
 		public Results Process (Options options)
 		{
+			var pkgspecs = FlattenAllPackageReferences (options).ToArray ();
 			var results = new Results ();
 			results.Downloads.BaseDirectory = options.OutputPath ?? Directory.GetCurrentDirectory ();
-			var pkgspecs = FlattenAllPackageReferences (options).ToArray ();
+
+			return Download (options, results, pkgspecs);
+		}
+
+		public IEnumerable<PackageReference> FlattenAllPackageReferences (Options options)
+		{
+			var list = new List<PackageReference> ();
+			foreach (var pom in options.Poms)
+				FlattenDependencies (list, Repository.FromGradleSpecifier (pom), options);
+			return list;
+		}
+
+		public Results Download (Options options, Results results, IEnumerable<PackageReference> pkgspecs)
+		{
 			var processed = new List<PackageReference> ();
 			foreach (var pkgspec in pkgspecs) {
 				if (processed.Any (p => p.ToString () == pkgspec.ToString ()))
@@ -80,7 +83,7 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 						if (!repo.CanTryDownloading (pkgspec))
 							continue;
 						repo.FixIncompletePackageReference (pkgspec, options);
-						foreach (var kind in new PomComponentKind [] { PomComponentKind.Binary, PomComponentKind.JavadocJar }) {
+						foreach (var kind in new PomComponentKind [] { PomComponentKind.Binary, PomComponentKind.JavadocJar, PomComponentKind.SourcesJar }) {
 							var outfile = BuildLocalCachePath (results.Downloads.BaseDirectory, pkgspec, kind);
 							results.Downloads.Entries.Add (new LocalMavenDownloads.Entry (pkgspec, kind, outfile));
 							Directory.CreateDirectory (Path.GetDirectoryName (outfile));

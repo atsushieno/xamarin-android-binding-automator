@@ -1,4 +1,5 @@
 using System;
+using Xwt;
 
 namespace Xamarin.Android.Tools.MavenBindingAutomator
 {
@@ -12,13 +13,17 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 			var builderOpts = automatorOptions.ProjectBuilderOptions;
 			var javadocOpts = automatorOptions.JavaDocumentImporterOptions;
 
+			bool gui = false;
+
 			dlOpts.Repositories.Add (new GoogleRepository ());
 			foreach (var arg in args) {
 				if (arg == "--help") {
 					ShowHelp ();
 					return;
 				}
-				if (arg.StartsWith ("--android-sdk:", StringComparison.Ordinal))
+				if (arg == "--gui")
+					gui = true;
+				else if (arg.StartsWith ("--android-sdk:", StringComparison.Ordinal))
 					dlOpts.Repositories.Add (new LocalAndroidSdkRepository (arg.Substring ("--android-sdk:".Length)));
 				else if (arg.StartsWith ("--xamarin-sdk:", StringComparison.Ordinal))
 					javadocOpts.XamarinSdk = arg.Substring ("--xamarin-sdk:".Length);
@@ -33,7 +38,16 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 			}
 			dlOpts.Repositories.Add (new JCenterRepository ());
 
-			new MavenBindingAutomator ().Process (automatorOptions);
+			if (gui) {
+				Application.Initialize ();
+				var window = new MainWindow ();
+				window.Closed += (sender, e) => Application.Exit ();
+				window.Show ();
+				window.State.Options = automatorOptions;
+				Application.Run ();
+			} else {
+				new MavenBindingAutomator ().Process (automatorOptions);
+			}
 		}
 
 		static void ShowHelp ()

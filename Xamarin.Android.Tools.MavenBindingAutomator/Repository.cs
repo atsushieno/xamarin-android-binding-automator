@@ -215,6 +215,13 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 			    pr.GroupId.StartsWith ("com.android.tools") ||
 			    pr.GroupId.StartsWith ("com.android.tools"))
 				return true;
+			switch (pr.GroupId) {
+			case "com.google.firebase":
+			case "com.google.android.gms":
+			case "com.google.android.support":
+			case "com.google.android.wearable":
+				return true;
+			}
 			return false;
 		}
 	}
