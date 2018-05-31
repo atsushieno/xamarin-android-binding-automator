@@ -116,7 +116,7 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 				throw new ArgumentException ("artifactId is empty for " + pr);
 			if (string.IsNullOrEmpty (pr.Version))
 				throw new ArgumentException ("version is empty for " + pr);
-			return Path.Combine (basePath ?? "", "download_cache", pr.GroupId, pr.ArtifactId, pr.Version, $"{pr.ArtifactId}-{pr.Version}{kind.ToFileSuffix (pr)}");
+			return Path.Combine (basePath ?? "", pr.GroupId, pr.ArtifactId, pr.Version, $"{pr.ArtifactId}-{pr.Version}{kind.ToFileSuffix (pr)}");
 		}
 	}
 	

@@ -2,6 +2,7 @@
 using Xwt;
 using System.Linq;
 using System.IO;
+using System.Runtime.Remoting.Messaging;
 
 namespace Xamarin.Android.Tools.MavenBindingAutomator
 {
@@ -16,6 +17,10 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 
 			var layout = new VBox ();
 
+			// package ID entry
+			var packageRow = new HBox ();
+			layout.PackStart (packageRow);
+			packageRow.PackStart (new Label { Text = "POM" });
 			var packageIdEntry = new ComboBoxEntry ();
 			using (var store = System.IO.IsolatedStorage.IsolatedStorageFile.GetUserStoreForAssembly ())
 				if (store.FileExists ("history.txt"))
@@ -29,8 +34,59 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 			packageIdEntry.TextInput += (sender, e) => updatePoms ();
 			packageIdEntry.SelectionChanged += (sender, e) => updatePoms ();
 
-			layout.PackStart (packageIdEntry);
+			packageRow.PackStart (packageIdEntry, true);
 
+			// Maven download directory entry
+			var downloadDirectoryRow = new HBox ();
+			layout.PackStart (downloadDirectoryRow);
+			downloadDirectoryRow.PackStart (new Label { Text = "Downloads" });
+			var downloadDirectoryEntry = new ComboBoxEntry ();
+			using (var store = System.IO.IsolatedStorage.IsolatedStorageFile.GetUserStoreForAssembly ())
+				if (store.FileExists ("download_directories.txt"))
+					using (var file = store.OpenFile ("download_directories.txt", FileMode.Open, FileAccess.Read))
+						foreach (var line in new StreamReader (file).ReadToEnd ().Split ('\n'))
+							downloadDirectoryEntry.Items.Add (line.TrimEnd ());
+			Action updateDownload = () => {
+				State.Options.DownloaderOptions.OutputPath = downloadDirectoryEntry.TextEntry.Text;
+			};
+			downloadDirectoryEntry.TextInput += (sender, e) => updateDownload ();
+			downloadDirectoryEntry.SelectionChanged += (sender, e) => updateDownload ();
+			downloadDirectoryRow.PackStart (downloadDirectoryEntry, true);
+
+			var downloadDirectoryPickerButton = new Button () { Label = "Choose..." };
+			downloadDirectoryPickerButton.Clicked += delegate {
+				var chooser = new SelectFolderDialog ("Choose directory to store downloads.") { CanCreateFolders = true };
+				if (chooser.Run ())
+					downloadDirectoryEntry.TextEntry.Text = chooser.Folder;
+			};
+			downloadDirectoryRow.PackStart (downloadDirectoryPickerButton);
+
+			// solution directory entry
+			var solutionDirectoryRow = new HBox ();
+			layout.PackStart (solutionDirectoryRow);
+			solutionDirectoryRow.PackStart (new Label { Text = "Projects" });
+			var solutionDirectoryEntry = new ComboBoxEntry ();
+			using (var store = System.IO.IsolatedStorage.IsolatedStorageFile.GetUserStoreForAssembly ())
+				if (store.FileExists ("project_directories.txt"))
+					using (var file = store.OpenFile ("project_directories.txt", FileMode.Open, FileAccess.Read))
+						foreach (var line in new StreamReader (file).ReadToEnd ().Split ('\n'))
+							solutionDirectoryEntry.Items.Add (line.TrimEnd ());
+			Action updateSolutionDirectory = () => {
+				State.Options.ProjectCreatorOptions.SolutionDirectory = solutionDirectoryEntry.TextEntry.Text;
+			};
+			solutionDirectoryEntry.TextInput += (sender, e) => updateSolutionDirectory ();
+			solutionDirectoryEntry.SelectionChanged += (sender, e) => updateSolutionDirectory ();
+			solutionDirectoryRow.PackStart (solutionDirectoryEntry, true);
+
+			var solutionDirectoryPickerButton = new Button () { Label = "Choose..." };
+			solutionDirectoryPickerButton.Clicked += delegate {
+				var chooser = new SelectFolderDialog ("Choose directory to create projects.") { CanCreateFolders = true };
+				if (chooser.Run ())
+					solutionDirectoryEntry.TextEntry.Text = chooser.Folder;
+			};
+			solutionDirectoryRow.PackStart (solutionDirectoryPickerButton);
+
+			// import button
 			import_button = new Button { Label = "Import" };
 			import_button.Clicked += (sender, e) => {
 				// switch to importing state
@@ -38,13 +94,28 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 				this.Content.Cursor = CursorType.Wait; // does not seem to make much sense...
 
 				System.Threading.Tasks.Task.Run (() => {
-					using (var store = System.IO.IsolatedStorage.IsolatedStorageFile.GetUserStoreForAssembly ())
-					using (var file = store.OpenFile ("history.txt", FileMode.OpenOrCreate, FileAccess.Write))
-					using (var writer = new StreamWriter (file)) {
-						writer.WriteLine (packageIdEntry.TextEntry.Text);
-						foreach (string item in packageIdEntry.Items)
-							if (packageIdEntry.TextEntry.Text != item && !string.IsNullOrWhiteSpace (item))
-								writer.WriteLine (item);
+					using (var store = System.IO.IsolatedStorage.IsolatedStorageFile.GetUserStoreForAssembly ()) {
+						using (var file = store.OpenFile ("history.txt", FileMode.OpenOrCreate, FileAccess.Write))
+						using (var writer = new StreamWriter (file)) {
+							writer.WriteLine (packageIdEntry.TextEntry.Text);
+							foreach (string item in packageIdEntry.Items)
+								if (packageIdEntry.TextEntry.Text != item && !string.IsNullOrWhiteSpace (item))
+									writer.WriteLine (item);
+						}
+						using (var file = store.OpenFile ("download_directories.txt", FileMode.OpenOrCreate, FileAccess.Write))
+						using (var writer = new StreamWriter (file)) {
+							writer.WriteLine (downloadDirectoryEntry.TextEntry.Text);
+							foreach (string item in downloadDirectoryEntry.Items)
+								if (downloadDirectoryEntry.TextEntry.Text != item && !string.IsNullOrWhiteSpace (item))
+									writer.WriteLine (item);
+						}
+						using (var file = store.OpenFile ("solution_directories.txt", FileMode.OpenOrCreate, FileAccess.Write))
+						using (var writer = new StreamWriter (file)) {
+							writer.WriteLine (solutionDirectoryEntry.TextEntry.Text);
+							foreach (string item in solutionDirectoryEntry.Items)
+								if (solutionDirectoryEntry.TextEntry.Text != item && !string.IsNullOrWhiteSpace (item))
+									writer.WriteLine (item);
+						}
 					}
 					PerformImport ();
 				});
@@ -95,6 +166,21 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 				Content.Cursor = CursorType.Arrow;
 				import_button.Sensitive = true;
 			});
+
+			if (!string.IsNullOrEmpty (State.Options.DownloaderOptions.OutputPath)) {
+				var downloaderResults = new MavenDownloader.Results ();
+				downloaderResults.Downloads.BaseDirectory = State.Options.DownloaderOptions.OutputPath ?? Directory.GetCurrentDirectory ();
+				d.Download (State.Options.DownloaderOptions, downloaderResults, packages);
+
+
+				// create project to build
+				var c = new BindingProjectCreator ();
+				var cr = c.Process (State.Options.ProjectCreatorOptions, downloaderResults.Downloads);
+
+				// build project
+				var b = new BindingProjectBuilder ();
+				b.Process (State.Options.ProjectBuilderOptions, cr.Projects);
+			}
 		}
 	}
 
