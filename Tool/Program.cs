@@ -1,5 +1,6 @@
 using System;
 using Xwt;
+using Xamarin.MavenClient;
 
 namespace Xamarin.Android.Tools.MavenBindingAutomator
 {

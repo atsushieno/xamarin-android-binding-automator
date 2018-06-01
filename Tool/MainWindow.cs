@@ -3,6 +3,7 @@ using Xwt;
 using System.Linq;
 using System.IO;
 using System.Runtime.Remoting.Messaging;
+using Xamarin.MavenClient;
 
 namespace Xamarin.Android.Tools.MavenBindingAutomator
 {

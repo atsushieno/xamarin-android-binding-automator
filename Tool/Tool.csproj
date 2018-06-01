@@ -60,6 +60,10 @@
       <Project>{2DD1EE75-6D8D-4653-A800-0A24367F7F38}</Project>
       <Name>Xamarin.ProjectTools</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Xamarin.MavenClient\Xamarin.MavenClient.csproj">
+      <Project>{82E6489A-D925-4015-8F16-5ACE2B795F4D}</Project>
+      <Name>Xamarin.MavenClient</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

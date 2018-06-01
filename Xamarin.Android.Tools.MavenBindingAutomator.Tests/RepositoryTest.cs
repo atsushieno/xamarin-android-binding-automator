@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using NUnit.Framework;
+using Xamarin.MavenClient;
 
 namespace Xamarin.Android.Tools.MavenBindingAutomator.Tests
 {

@@ -7,7 +7,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>Xamarin.Android.Tools.MavenBindingAutomator</RootNamespace>
     <AssemblyName>Xamarin.Android.Tools.MavenBindingAutomator</AssemblyName>
-    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -34,17 +34,12 @@
     <Reference Include="Microsoft.Build.Framework" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Repository.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="MavenDownloader.cs" />
-    <Compile Include="PackageReference.cs" />
-    <Compile Include="PomComponentKind.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="MavenBindingAutomator.cs" />
     <Compile Include="JavaDocumentImporter.cs" />
     <Compile Include="LogRecord.cs" />
     <Compile Include="BindingProjectCreator.cs" />
-    <Compile Include="LocalMavenDownloads.cs" />
     <Compile Include="BindingProjectBuilder.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -55,6 +50,10 @@
     <ProjectReference Include="..\external\Xamarin.ProjectTools\Xamarin.ProjectTools.csproj">
       <Project>{2DD1EE75-6D8D-4653-A800-0A24367F7F38}</Project>
       <Name>Xamarin.ProjectTools</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Xamarin.MavenClient\Xamarin.MavenClient.csproj">
+      <Project>{82E6489A-D925-4015-8F16-5ACE2B795F4D}</Project>
+      <Name>Xamarin.MavenClient</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

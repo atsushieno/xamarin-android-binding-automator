@@ -1,10 +1,10 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Xml.Linq;
 
-namespace Xamarin.Android.Tools.MavenBindingAutomator
+namespace Xamarin.MavenClient
 {
 	public class MavenDownloader
 	{
@@ -119,5 +119,5 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 			return Path.Combine (basePath ?? "", pr.GroupId, pr.ArtifactId, pr.Version, $"{pr.ArtifactId}-{pr.Version}{kind.ToFileSuffix (pr)}");
 		}
 	}
-	
+
 }

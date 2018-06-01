@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Xamarin.Android.Tools.MavenBindingAutomator
+namespace Xamarin.MavenClient
 {
 	public class LocalMavenDownloads
 	{

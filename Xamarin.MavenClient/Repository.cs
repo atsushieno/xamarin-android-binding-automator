@@ -6,7 +6,7 @@ using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 
-namespace Xamarin.Android.Tools.MavenBindingAutomator
+namespace Xamarin.MavenClient
 {
 	public abstract class Repository
 	{

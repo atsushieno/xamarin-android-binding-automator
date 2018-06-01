@@ -2,6 +2,7 @@
 using System.IO;
 using Microsoft.Build.Framework;
 using Microsoft.Build.Utilities;
+using Xamarin.MavenClient;
 
 namespace Xamarin.Android.Tools.MavenBindingAutomator.BuildTasks
 {

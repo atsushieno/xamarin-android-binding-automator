@@ -40,6 +40,10 @@
       <Project>{E8849285-0D16-4999-9614-64E5B5FC4C1D}</Project>
       <Name>Xamarin.Android.Tools.MavenBindingAutomator</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Xamarin.MavenClient\Xamarin.MavenClient.csproj">
+      <Project>{82E6489A-D925-4015-8F16-5ACE2B795F4D}</Project>
+      <Name>Xamarin.MavenClient</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
