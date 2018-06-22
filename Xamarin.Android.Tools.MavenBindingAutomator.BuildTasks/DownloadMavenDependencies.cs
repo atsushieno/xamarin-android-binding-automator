@@ -29,16 +29,12 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator.BuildTasks
 			var dlOpts = automatorOptions.DownloaderOptions;
 			var creatorOpts = automatorOptions.ProjectCreatorOptions;
 			var builderOpts = automatorOptions.ProjectBuilderOptions;
-			var javadocOpts = automatorOptions.JavaDocumentImporterOptions;
 
 			if (EnableGoogleRepository)
 				dlOpts.Repositories.Add (new GoogleRepository ());
 
 			if (Directory.Exists (AndroidSdkDirectory))
 				dlOpts.Repositories.Add (new LocalAndroidSdkRepository (AndroidSdkDirectory));
-
-			if (Directory.Exists (XamarinSdkDirectory))
-				javadocOpts.XamarinSdk = XamarinSdkDirectory;
 
 			dlOpts.OutputPath = OutputDirectory;
 			foreach (var pkg in MavenPackageIds)

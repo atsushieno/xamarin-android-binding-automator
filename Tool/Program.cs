@@ -12,7 +12,6 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 			var dlOpts = automatorOptions.DownloaderOptions;
 			var creatorOpts = automatorOptions.ProjectCreatorOptions;
 			var builderOpts = automatorOptions.ProjectBuilderOptions;
-			var javadocOpts = automatorOptions.JavaDocumentImporterOptions;
 
 			bool gui = false;
 
@@ -26,8 +25,6 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 					gui = true;
 				else if (arg.StartsWith ("--android-sdk:", StringComparison.Ordinal))
 					dlOpts.Repositories.Add (new LocalAndroidSdkRepository (arg.Substring ("--android-sdk:".Length)));
-				else if (arg.StartsWith ("--xamarin-sdk:", StringComparison.Ordinal))
-					javadocOpts.XamarinSdk = arg.Substring ("--xamarin-sdk:".Length);
 				else if (arg.StartsWith ("--projects:", StringComparison.Ordinal)) {
 					creatorOpts.SolutionDirectory = arg.Substring ("--projects:".Length);
 					builderOpts.SolutionDirectory = arg.Substring ("--projects:".Length);
@@ -44,7 +41,7 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 				var window = new MainWindow ();
 				window.Closed += (sender, e) => Application.Exit ();
 				window.Show ();
-				window.State.Options = automatorOptions;
+				window.Model.Options = automatorOptions;
 				Application.Run ();
 			} else {
 				new MavenBindingAutomator ().Process (automatorOptions);

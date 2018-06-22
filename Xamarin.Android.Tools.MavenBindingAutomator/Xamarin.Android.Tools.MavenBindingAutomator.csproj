@@ -37,10 +37,10 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Extensions.cs" />
     <Compile Include="MavenBindingAutomator.cs" />
-    <Compile Include="JavaDocumentImporter.cs" />
     <Compile Include="LogRecord.cs" />
     <Compile Include="BindingProjectCreator.cs" />
     <Compile Include="BindingProjectBuilder.cs" />
+    <Compile Include="Xamarin.AndroidBindingModel\AndroidBindingMappings.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\external\LibZipSharp\libZipSharp.csproj">
@@ -55,6 +55,9 @@
       <Project>{82E6489A-D925-4015-8F16-5ACE2B795F4D}</Project>
       <Name>Xamarin.MavenClient</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Xamarin.AndroidBindingModel\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
 </Project>
