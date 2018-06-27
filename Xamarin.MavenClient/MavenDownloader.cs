@@ -16,6 +16,7 @@ namespace Xamarin.MavenClient
 			public TextWriter LogWriter { get; set; } = Console.Out;
 			public IList<Repository> Repositories { get; private set; } = new List<Repository> ();
 			public IList<string> ExtraScopes { get; private set; } = new List<string> ();
+			public bool SkipExisting { get; set; } = true;
 
 			public void LogMessage (string format, params object [] args)
 			{
@@ -83,9 +84,11 @@ namespace Xamarin.MavenClient
 						if (!repo.CanTryDownloading (pkgspec))
 							continue;
 						repo.FixIncompletePackageReference (pkgspec, options);
-						foreach (var kind in new PomComponentKind [] { PomComponentKind.Binary, PomComponentKind.JavadocJar, PomComponentKind.SourcesJar }) {
+						foreach (var kind in new PomComponentKind [] { PomComponentKind.PomXml, PomComponentKind.Binary, PomComponentKind.JavadocJar, PomComponentKind.SourcesJar }) {
 							var outfile = BuildLocalCachePath (results.Downloads.BaseDirectory, pkgspec, kind);
 							results.Downloads.Entries.Add (new LocalMavenDownloads.Entry (pkgspec, kind, outfile));
+							if (options.SkipExisting && File.Exists (outfile))
+								continue;
 							Directory.CreateDirectory (Path.GetDirectoryName (outfile));
 							try {
 								using (var stream = repo.GetStreamAsync (pkgspec, kind, options, null).Result)

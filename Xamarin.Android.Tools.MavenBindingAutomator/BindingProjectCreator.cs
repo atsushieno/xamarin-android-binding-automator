@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using Xamarin.ProjectTools;
 using Xamarin.MavenClient;
+using System.Xml.Linq;
 
 namespace Xamarin.Android.Tools.MavenBindingAutomator
 {
@@ -38,7 +39,7 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 			Func<string, string> pathToFileInProj = local => Path.Combine (pathPrefix, local); 
 
 			foreach (var g in downloads.Entries.GroupBy (e => $"{e.Package.GroupId}:{e.Package.ArtifactId}:{e.Package.Version}")) {
-				var proj = new XamarinAndroidBindingProject () { ProjectName = g.Key.Replace (':', '_') };
+				var proj = new XamarinAndroidBindingProject () { ProjectName = g.Key.Replace (':', '_'), AndroidClassParser = "class-parse" };
 				var dir = Path.Combine (options.SolutionDirectory, proj.ProjectName);
 				foreach (var d in g) {
 					string fp = Path.Combine (dir, d.LocalFile);
@@ -48,9 +49,15 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 					}
 					string file = pathToFileInProj (d.LocalFile);
 					if (d.ComponentKind == PomComponentKind.Binary)
-						proj.Jars.Add (d.Package.Packaging == "jar" ? (BuildItem) new AndroidItem.EmbeddedJar (file) : new AndroidItem.LibraryProjectZip (file));
+						proj.Jars.Add (d.Package.Packaging == "jar" ? (BuildItem)new AndroidItem.EmbeddedJar (file) : new AndroidItem.LibraryProjectZip (file));
 					else if (d.ComponentKind == PomComponentKind.JavadocJar)
 						proj.OtherBuildItems.Add (new BuildItem ("JavaDocJar", file));
+					else if (d.ComponentKind == PomComponentKind.PomXml) {
+						foreach (PackageReference dep in PackageReference.Load (XElement.Load (file)).Dependencies) {
+							var depName = dep.ToString ().Replace (':', '_');
+							proj.OtherBuildItems.Add (new BuildItem ("ProjectReference", Path.Combine ("..", depName, depName + ".csproj")));
+						}
+					}
 				}
 				if (Directory.Exists (dir))
 					Directory.Delete (dir, true);

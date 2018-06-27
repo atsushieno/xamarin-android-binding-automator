@@ -9,4 +9,10 @@ namespace Xamarin.Android.Tools.MavenBindingAutomator
 		public string NuGetId { get; set; }
 		public string BindingProjectUrl { get; set; }
 	}
+
+	public class AndroidBindingProjectPart
+	{
+		public IList<string> MetadataXmlFiles { get; } = new List<string> ();
+		public IList<string> Additions { get; } = new List<string> ();
+	}
 }
